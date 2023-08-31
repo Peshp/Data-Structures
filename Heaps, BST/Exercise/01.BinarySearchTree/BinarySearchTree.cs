@@ -49,6 +49,7 @@
             {
                 node.Right = this.Insert(element, node.Right);
             }
+            node.Count = 1 + this.Count(node.Left) + this.Count(node.Right);
 
             return node;
         }
@@ -119,42 +120,139 @@
 
         public void Delete(T element)
         {
-            throw new NotImplementedException();
+            if (root == null)
+                throw new InvalidOperationException();
+
+            root = this.Delete(element, root);    
+        }
+        private Node Delete(T element, Node node)
+        {
+            if (node == null)
+                return null;
+
+            if(element.CompareTo(node.Value) < 0)
+                node.Left = this.Delete(element, node.Left);
+            if (element.CompareTo(node.Value) > 0)
+                node.Right = this.Delete(element, node.Right);
+            else
+            {                
+                if(node.Right == null)
+                    return node.Left;
+                if (node.Left == null)
+                    return node.Right;
+
+                var current = node;
+                node = this.FindMin(current.Right);
+                node.Right = this.DeleteMin(current.Right);
+                node.Left = current.Left;
+            }
+            node.Count = 1 + this.Count(node.Left) + this.Count(node.Right);
+
+            return node;
+        }
+        private Node FindMin(Node node)
+        {
+            if (node == null)
+                return node;
+
+            return this.FindMin(node.Left);
         }
 
         public void DeleteMax()
         {
-            throw new NotImplementedException();
+            if (root == null)
+                throw new InvalidOperationException();
+
+            root = this.DeleteMax(root);
+        }
+        private Node DeleteMax(Node node)
+        {
+            if (node.Right == null)
+                return node.Left;
+
+            node.Right = this.DeleteMax(node.Right);
+            node.Count = 1 + this.Count(node.Left) + this.Count(node.Right);
+
+            return node;
         }
 
         public void DeleteMin()
         {
-            throw new NotImplementedException();
+            if(root == null)
+                throw new InvalidOperationException();
+
+            root = this.DeleteMin(root);
+        }
+        private Node DeleteMin(Node node)
+        {
+            if (node.Left == null)
+                return node.Right;
+
+            node.Left = this.DeleteMin(node.Left);
+            node.Count = 1 + this.Count(node.Left) + this.Count(node.Right);
+            return node;
         }
 
         public int Count()
         {
-            throw new NotImplementedException();
+            return this.Count(root);
+        }
+        private int Count(Node node)
+        {
+            if(node == null)
+                return 0;
+
+            return node.Count;
         }
 
         public int Rank(T element)
         {
-            throw new NotImplementedException();
+            return this.Rank(element, root);
+        }
+        private int Rank(T element, Node node)
+        {
+            if(node == null)
+                return 0;
+
+            if(element.CompareTo(node.Value) < 0)
+                return this.Rank(element, node.Left);
+            if (element.CompareTo(node.Value) > 0)
+                return 1 + this.Count(node.Left) + this.Rank(element, node.Right);
+
+            return this.Count(node.Left);
         }
 
         public T Select(int rank)
         {
-            throw new NotImplementedException();
+            Node node = this.Select(rank, root);
+
+            if(node == null)
+                throw new InvalidOperationException();
+
+            return node.Value;
+        }
+        private Node Select(int element, Node node)
+        {
+            if(node == null)
+                return null;
+
+            int leftCount = this.Count(node.Left);
+            if (leftCount == element)
+                return node;
+            if (leftCount > element)
+                return this.Select(element, node.Left);
+
+            return this.Select(element - (leftCount + 1), node.Right);
         }
 
         public T Ceiling(T element)
         {
-            throw new NotImplementedException();
+            return this.Select(this.Rank(element) + 1);
         }
 
         public T Floor(T element)
         {
-            throw new NotImplementedException();
+            return this.Select(this.Rank(element) - 1);
         }
 
         public IEnumerable<T> Range(T startRange, T endRange)
